@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RetailDemoWP.Models
 {
-    class RetailVisiter
+    public class RetailVisiter
     {
         public string Id { get; set; }
         public string Name { get; set; }

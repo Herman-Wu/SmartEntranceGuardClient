@@ -33,6 +33,10 @@ using Windows.Storage;
 using Windows.UI;
 using Windows.UI.Xaml.Shapes;
 using Windows.Media.FaceAnalysis;
+using Windows.UI.Xaml.Media.Imaging;
+using Microsoft.ProjectOxford.Face.Contract;
+using RetailDemoWP.Services;
+using System.Text;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -48,9 +52,7 @@ namespace RetailDemoWP
         private readonly SimpleOrientationSensor _orientationSensor = SimpleOrientationSensor.GetDefault();
         private SimpleOrientation _deviceOrientation = SimpleOrientation.NotRotated;
         private DisplayOrientations _displayOrientation = DisplayOrientations.Portrait;
-
-        // Rotation metadata to apply to the preview stream and recorded videos (MF_MT_VIDEO_ROTATION)
-        // Reference: http://msdn.microsoft.com/en-us/library/windows/apps/xaml/hh868174.aspx
+      
         private static readonly Guid RotationKey = new Guid("C380465D-2271-428C-9B83-ECEA3B4A85C1");
 
         // Prevent the screen from sleeping while the camera is running
@@ -70,6 +72,9 @@ namespace RetailDemoWP
         private bool _externalCamera;
 
         private FaceDetectionEffect _faceDetectionEffect;
+        public Face[] RecognizedFaces = null;
+        private string ImgURL;
+        private StorageFile file;
 
         #region Constructor, lifecycle and navigation
 
@@ -456,12 +461,6 @@ namespace RetailDemoWP
         /// <returns></returns>
         private async Task TakePhotoAsync()
         {
-            //// While taking a photo, keep the video button enabled only if the camera supports simultaneosly taking pictures and recording video
-            //VideoButton.IsEnabled = _mediaCapture.MediaCaptureSettings.ConcurrentRecordAndPhotoSupported;
-
-            //// Make the button invisible if it's disabled, so it's obvious it cannot be interacted with
-            //VideoButton.Opacity = VideoButton.IsEnabled ? 1 : 0;
-
             var stream = new InMemoryRandomAccessStream();
 
             try
@@ -474,9 +473,10 @@ namespace RetailDemoWP
                 //Show Taked Photo
 
                 //Face Recognition
-                await CapturePhotoAsync(stream, photoOrientation);
-
-                //await ReencodeAndSavePhotoAsync(stream, photoOrientation);
+                //await CapturePhotoAsync(stream, photoOrientation);
+                
+                await ReencodeAndSavePhotoAsync(stream, photoOrientation);
+                await ProcessImage();
             }
             catch (Exception ex)
             {
@@ -691,7 +691,7 @@ namespace RetailDemoWP
             {
                 _orientationSensor.OrientationChanged -= OrientationSensor_OrientationChanged;
             }
-
+            
             _displayInformation.OrientationChanged -= DisplayInformation_OrientationChanged;
             _systemMediaControls.PropertyChanged -= SystemMediaControls_PropertyChanged;
         }
@@ -719,14 +719,21 @@ namespace RetailDemoWP
         /// <param name="stream">The photo stream</param>
         /// <param name="photoOrientation">The orientation metadata to apply to the photo</param>
         /// <returns></returns>
-        private static async Task ReencodeAndSavePhotoAsync(IRandomAccessStream stream, PhotoOrientation photoOrientation)
+        private async Task ReencodeAndSavePhotoAsync(IRandomAccessStream stream, PhotoOrientation photoOrientation)
         {
             using (var inputStream = stream)
             {
                 var decoder = await BitmapDecoder.CreateAsync(inputStream);
+                SoftwareBitmap softwareBitmap = await decoder.GetSoftwareBitmapAsync();
+                SoftwareBitmap softwareBitmapBGR8 = SoftwareBitmap.Convert(softwareBitmap,
+                    BitmapPixelFormat.Bgra8,
+                    BitmapAlphaMode.Premultiplied);
 
-                var file = await KnownFolders.PicturesLibrary.CreateFileAsync("SimplePhoto.jpeg", CreationCollisionOption.GenerateUniqueName);
-
+                SoftwareBitmapSource bitmapSource = new SoftwareBitmapSource();
+                await bitmapSource.SetBitmapAsync(softwareBitmapBGR8);
+                OutputImage.Source = bitmapSource;
+                file = await KnownFolders.PicturesLibrary.CreateFileAsync("SimplePhoto.jpeg", CreationCollisionOption.GenerateUniqueName);
+                
                 using (var outputStream = await file.OpenAsync(FileAccessMode.ReadWrite))
                 {
                     var encoder = await BitmapEncoder.CreateForTranscodingAsync(outputStream, decoder);
@@ -736,6 +743,7 @@ namespace RetailDemoWP
                     await encoder.BitmapProperties.SetPropertiesAsync(properties);
                     await encoder.FlushAsync();
                 }
+                ImgURL = file.Path;                
             }
         }
 
@@ -1060,26 +1068,50 @@ namespace RetailDemoWP
 
         #endregion
 
-        private static async Task CapturePhotoAsync(IRandomAccessStream stream, PhotoOrientation photoOrientation)
+        private async Task<Face[]> ProcessImage()
         {
-            using (var inputStream = stream)
+            Face[] faces = await imageProcessor(ImgURL);
+            UpdateUIWithFaces(faces);
+            return faces;
+        }
+
+        private async Task<Face[]> imageProcessor(string imgURL)
+        {           
+            Face[] faces;
+
+            try
             {
-                var decoder = await BitmapDecoder.CreateAsync(inputStream);
-
-                var file = await KnownFolders.PicturesLibrary.CreateFileAsync("SimplePhoto.jpeg", CreationCollisionOption.GenerateUniqueName);
-
+                ImageAnalyzer analyzer = new ImageAnalyzer();
+                //using (FileStream fileStream = await file.
                 using (var outputStream = await file.OpenAsync(FileAccessMode.ReadWrite))
                 {
-                    var encoder = await BitmapEncoder.CreateForTranscodingAsync(outputStream, decoder);
+                    
+                    faces = await analyzer.AnalyzeImageUsingHelper(outputStream.AsStream());
+                }
+            }
+            catch (Exception e)
+            {               
+                return null;
+            }
 
-                    var properties = new BitmapPropertySet { { "System.Photo.Orientation", new BitmapTypedValue(photoOrientation, PropertyType.UInt16) } };
+            //File.Delete(imageFileUriPath);
 
-                    await encoder.BitmapProperties.SetPropertiesAsync(properties);
-                    await encoder.FlushAsync();
+            return faces;
+        }
+
+        private void UpdateUIWithFaces(Face[] faces)
+        {
+            StringBuilder usersAgeBuilder = new StringBuilder();
+            if (faces != null)
+            {
+                int index = 0;
+                foreach (var face in faces)
+                {
+                    //HumanIdentification identification = new HumanIdentification();
+                    AgeTxt.Text = face.Attributes.Age.ToString() + " years old";
+                    GenderTxt.Text = face.Attributes.Gender;                   
                 }
             }
         }
-
-
     }
 }

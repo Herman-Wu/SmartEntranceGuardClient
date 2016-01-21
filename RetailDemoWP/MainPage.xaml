@@ -33,7 +33,7 @@
             <!--For more details, see SetFacesCanvasRotation-->
             <Canvas Name="FacesCanvas" RenderTransformOrigin="0.5,0.5"/>
         </Canvas>
-        <Image Name="OutputImage" Source="Assets/Square44x44Logo.png" Stretch="None" />
+       
         <!-- Capture + Record buttons -->
         <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center">
             <Button Name="PhotoButton" Tapped="PhotoButton_Tapped" IsEnabled="False">
@@ -41,7 +41,13 @@
                     <SymbolIcon Symbol="Camera"/>
                 </Viewbox>
             </Button>
-            
+            <Image Name="OutputImage" Source="Assets/Square44x44Logo.png" Width="150" Height="150" Stretch="UniformToFill"/>
+            <StackPanel Orientation="Vertical">
+                <TextBlock Name="AgeTxt" FontSize="18" Foreground="White" Margin="10" VerticalAlignment="Center" Grid.Column="0"
+                   FontFamily="Segoe UI Semibold"/>
+                <TextBlock Name="GenderTxt" FontSize="18" Foreground="Black" Margin="10" VerticalAlignment="Center" Grid.Column="1"
+                   FontFamily="Segoe UI Semibold"/>
+            </StackPanel>
             <!--<Button Name="VideoButton" Tapped="VideoButton_Tapped" IsEnabled="False">
                 <Grid>
                     <Ellipse x:Name="StartRecordingIcon" Fill="Red" Width="20" Height="20"/>
