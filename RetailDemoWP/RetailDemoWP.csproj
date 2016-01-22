@@ -93,6 +93,8 @@
     <Content Include="ApplicationInsights.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\RetailProducts.json" />
+    <Content Include="Assets\SampleData\RetailProducts.json" />
     <None Include="project.json" />
     <None Include="RetailDemoWP_StoreKey.pfx" />
   </ItemGroup>
@@ -113,6 +115,7 @@
       <DependentUpon>ProductHighLight.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\ProductDataService.cs" />
     <Compile Include="Services\DeviceHelper.cs" />
     <Compile Include="Services\ImageAnalyzer.cs" />
     <Compile Include="Services\PushNotificationService.cs" />

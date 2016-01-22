@@ -40,6 +40,7 @@ namespace RetailDemoWP
         public static RetailVisiter CurrentVisiter;
         public static Microsoft.ApplicationInsights.TelemetryClient TelemetryClient;
         public static string DeviceID;
+        public static string UserName;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -47,18 +48,11 @@ namespace RetailDemoWP
         /// </summary>
         public App()
         {
-            CurrentVisiter = new RetailVisiter();
-            Microsoft.ApplicationInsights.WindowsAppInitializer.InitializeAsync(
-                Microsoft.ApplicationInsights.WindowsCollectors.Metadata |
-                Microsoft.ApplicationInsights.WindowsCollectors.Session |
-                Microsoft.ApplicationInsights.WindowsCollectors.PageView |
-                Microsoft.ApplicationInsights.WindowsCollectors.UnhandledException);
-            TelemetryClient = new TelemetryClient();
-            DeviceID = Services.DeviceHelper.GetDeviceID();
-            App.TelemetryClient.Context.Device.Id = DeviceID;
-            TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = true;
-            this.InitializeComponent();
+            CurrentVisiter = new RetailVisiter();         
+            ApplicationInisghtsInitialize();
+         
             this.Suspending += OnSuspending;
+            
         }
 
         /// <summary>
@@ -145,7 +139,7 @@ namespace RetailDemoWP
 
             TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = true;
             BasicInfo.Initialize();
-            App.TelemetryClient.Context.Device.Id = BasicInfo.DeviceID;
+            DeviceID = App.TelemetryClient.Context.Device.Id = BasicInfo.DeviceID;
             App.TelemetryClient.Context.User.Id = BasicInfo.UserName;
 
         }

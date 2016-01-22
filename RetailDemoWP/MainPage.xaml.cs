@@ -37,6 +37,10 @@ using Windows.UI.Xaml.Media.Imaging;
 using Microsoft.ProjectOxford.Face.Contract;
 using RetailDemoWP.Services;
 using System.Text;
+using System.Collections.ObjectModel;
+using RetailDemoWP.Models;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -52,7 +56,7 @@ namespace RetailDemoWP
         private readonly SimpleOrientationSensor _orientationSensor = SimpleOrientationSensor.GetDefault();
         private SimpleOrientation _deviceOrientation = SimpleOrientation.NotRotated;
         private DisplayOrientations _displayOrientation = DisplayOrientations.Portrait;
-      
+       
         private static readonly Guid RotationKey = new Guid("C380465D-2271-428C-9B83-ECEA3B4A85C1");
 
         // Prevent the screen from sleeping while the camera is running
@@ -75,13 +79,14 @@ namespace RetailDemoWP
         public Face[] RecognizedFaces = null;
         private string ImgURL;
         private StorageFile file;
+        private ObservableCollection<Product> _rProducts;
 
         #region Constructor, lifecycle and navigation
 
         public MainPage()
         {
             this.InitializeComponent();
-
+            _rProducts = new ObservableCollection<Product>();
             // Do not cache the state of the UI when suspending/navigating
             NavigationCacheMode = NavigationCacheMode.Disabled;
 
@@ -479,10 +484,12 @@ namespace RetailDemoWP
                 //Show Taked Photo
 
                 //Face Recognition
-          
+
                 await ReencodeAndSavePhotoAsync(stream, photoOrientation);               
                 await ProcessImage();
-                this.Frame.Navigate(typeof(ProductHighLight));
+               
+                await RegisterNotifi();
+                //this.Frame.Navigate(typeof(ProductHighLight));
 
             }
             catch (Exception ex)
@@ -1086,6 +1093,12 @@ namespace RetailDemoWP
             App.TelemetryClient.TrackEvent("FaceRecognition", properties, metrics);
             App.TelemetryClient.TrackMetric("FacFaceRecognitionTime", stopwatch.Elapsed.TotalSeconds);
             UpdateUIWithFaces(faces);
+            RecommandProduct psrv = new RecommandProduct();
+            //List<Product> tt=await psrv.RecommandProductbyImage(faces[0]);
+             rProducts = new ObservableCollection<Product>(await psrv.RecommandProductbyImage(faces[0]));
+            //RecommandedProductsList.DataContext = ;
+            RecommandedProductsList.ItemsSource = rProducts;
+            RecommandedProductsList.UpdateLayout();
             return faces;
         }
 
@@ -1122,11 +1135,45 @@ namespace RetailDemoWP
                 foreach (var face in faces)
                 {
                     //HumanIdentification identification = new HumanIdentification();
-                    App.CurrentVisiter.Age = AgeTxt.Text = face.Attributes.Age.ToString() + " years old";
+                    App.CurrentVisiter.Age = AgeTxt.Text = face.Attributes.Age.ToString();
                     App.CurrentVisiter.Gender= GenderTxt.Text = face.Attributes.Gender;  
                      
                 }
             }
         }
+
+        private async Task RegisterNotifi()
+        {
+            PushNotificationService src = new PushNotificationService();
+            if (App.CurrentVisiter != null)
+            {
+                src.UAge = App.CurrentVisiter.Age;
+                src.UGender = App.CurrentVisiter.Gender;
+                src.DeviceID = Utils.BasicInfo.DeviceID;
+                src.UName = Utils.BasicInfo.UserName;
+            }
+            src.InitNotificationsAsync();
+        }
+
+        public ObservableCollection<Product> rProducts
+        {
+            get { return _rProducts; }
+            set
+            {
+                _rProducts = value;
+                NotifyPropertyChanged("rProducts");
+            }
+        }
+                // PropertyChanged event triggering method.
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void NotifyPropertyChanged(String propertyName)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (null != handler)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
     }
 }

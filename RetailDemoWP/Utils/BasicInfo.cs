@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.System;
 using Windows.System.Profile;
 using Windows.System.UserProfile;
 
@@ -18,7 +19,7 @@ namespace RetailDemoWP.Utils
         {
             if (!IsInitialized)
             {
-                DeviceID = GetDeviceID();
+                DeviceID = "MiniConnectDID";//Services.DeviceHelper.GetDeviceID();
                 SetUserName();
                 IsInitialized = true;
             }
@@ -48,10 +49,22 @@ namespace RetailDemoWP.Utils
         private static async void SetUserName()
         {
             UserName = "";
-            bool isUserInformationAPIPresent = Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.System.UserProfile.UserInformation");
-            if (isUserInformationAPIPresent)
+            //bool isUserInformationAPIPresent = Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.System.UserProfile.UserInformation");
+            //if (isUserInformationAPIPresent)
+            //{
+            //    UserName = await UserInformation.GetDisplayNameAsync();
+            //}
+            IReadOnlyList<User> users = await User.FindAllAsync();
+
+            var current = users.Where(p => p.AuthenticationStatus == UserAuthenticationStatus.LocallyAuthenticated &&
+                                        p.Type == UserType.LocalUser).FirstOrDefault();
+
+            // user may have username
+            var data = await current.GetPropertyAsync(KnownUserProperties.FirstName);
+            UserName = (string)data;
+            if(UserName == null)
             {
-                UserName = await UserInformation.GetDisplayNameAsync();
+                UserName = "MiniConnectTester";
             }
         }
     }

@@ -30,21 +30,27 @@
         <Canvas>
             <Canvas Name="FacesCanvas" RenderTransformOrigin="0.5,0.5"/>
         </Canvas>
-       
+        <Canvas>
+            <Canvas Name="ProdocuRecommand" RenderTransformOrigin="0.5,0.5"/>
+        </Canvas>
+
         <!-- Capture + Record buttons -->
-        <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center">
+        <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Vertical">
             <Button Name="PhotoButton" Tapped="PhotoButton_Tapped" IsEnabled="False">
                 <Viewbox>
                     <SymbolIcon Symbol="Camera"/>
                 </Viewbox>
             </Button>
-            <Image Name="OutputImage" Source="Assets/Square44x44Logo.png" Width="150" Height="150" Stretch="UniformToFill"/>
+            <Image Name="OutputImage" Source="Assets/Square44x44Logo.png" Width="100" Height="100" Stretch="Uniform"/>
+            
             <StackPanel Orientation="Vertical">
-                <TextBlock Name="AgeTxt" FontSize="18" Foreground="White" Margin="10" VerticalAlignment="Center" Grid.Column="0"
+                <TextBlock Name="AgeTxt" FontSize="12" Foreground="White" Margin="10" VerticalAlignment="Center" 
                    FontFamily="Segoe UI Semibold"/>
-                <TextBlock Name="GenderTxt" FontSize="18" Foreground="Black" Margin="10" VerticalAlignment="Center" Grid.Column="1"
+                <TextBlock Name="GenderTxt" FontSize="12" Foreground="White" Margin="10" VerticalAlignment="Center" 
                    FontFamily="Segoe UI Semibold"/>
             </StackPanel>
+
+           
             <!--<Button Name="VideoButton" Tapped="VideoButton_Tapped" IsEnabled="False">
                 <Grid>
                     <Ellipse x:Name="StartRecordingIcon" Fill="Red" Width="20" Height="20"/>
@@ -52,8 +58,24 @@
                 </Grid>
             </Button>-->
         </StackPanel>
-
-        <!--Button to enable / disable face detection-->
+        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Vertical">
+            <ListView  Name="RecommandedProductsList" ItemsSource="{Binding rProducts}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{Binding Photo}" Height="80" Width="80" Stretch="Uniform"/>
+                            <StackPanel Orientation="Vertical" >
+                            <!--<TextBlock Text="Name: " />
+                                <TextBlock Text="{Binding name}" Foreground="White"/>-->
+                                <TextBlock Text="Region: " Foreground="Yellow" />
+                                <TextBlock Text="{Binding Region}" Foreground="White" />
+                                </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
+            <!--Button to enable / disable face detection-->
         <!--<Button Name="FaceDetectionButton" Tapped="FaceDetectionButton_Tapped" IsEnabled="False">
             <Viewbox>
                 <Grid>
