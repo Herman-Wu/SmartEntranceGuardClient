@@ -26,6 +26,9 @@ using Windows.UI.Xaml.Navigation;
 using Microsoft.WindowsAzure.Messaging;
 using System.Diagnostics;
 using RetailDemoWP.Models;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.ApplicationInsights;
+using RetailDemoWP.Utils;
 
 namespace RetailDemoWP
 {
@@ -35,6 +38,9 @@ namespace RetailDemoWP
     sealed partial class App : Application
     {
         public static RetailVisiter CurrentVisiter;
+        public static Microsoft.ApplicationInsights.TelemetryClient TelemetryClient;
+        public static string DeviceID;
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -44,7 +50,13 @@ namespace RetailDemoWP
             CurrentVisiter = new RetailVisiter();
             Microsoft.ApplicationInsights.WindowsAppInitializer.InitializeAsync(
                 Microsoft.ApplicationInsights.WindowsCollectors.Metadata |
-                Microsoft.ApplicationInsights.WindowsCollectors.Session);
+                Microsoft.ApplicationInsights.WindowsCollectors.Session |
+                Microsoft.ApplicationInsights.WindowsCollectors.PageView |
+                Microsoft.ApplicationInsights.WindowsCollectors.UnhandledException);
+            TelemetryClient = new TelemetryClient();
+            DeviceID = Services.DeviceHelper.GetDeviceID();
+            App.TelemetryClient.Context.Device.Id = DeviceID;
+            TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = true;
             this.InitializeComponent();
             this.Suspending += OnSuspending;
         }
@@ -102,6 +114,8 @@ namespace RetailDemoWP
         /// <param name="e">Details about the navigation failure</param>
         void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
         {
+            ////Application Insights
+            TelemetryClient.TrackException(e.Exception);
             throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
         }
 
@@ -119,7 +133,22 @@ namespace RetailDemoWP
             deferral.Complete();
         }
 
+        private void ApplicationInisghtsInitialize()
+        {
+            Microsoft.ApplicationInsights.WindowsAppInitializer.InitializeAsync(
+               Microsoft.ApplicationInsights.WindowsCollectors.Metadata |
+               Microsoft.ApplicationInsights.WindowsCollectors.Session |
+                 Microsoft.ApplicationInsights.WindowsCollectors.PageView |
+           Microsoft.ApplicationInsights.WindowsCollectors.UnhandledException);
 
+            TelemetryClient = new TelemetryClient();
+
+            TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = true;
+            BasicInfo.Initialize();
+            App.TelemetryClient.Context.Device.Id = BasicInfo.DeviceID;
+            App.TelemetryClient.Context.User.Id = BasicInfo.UserName;
+
+        }
 
     }
 }

@@ -118,6 +118,7 @@
     <Compile Include="Services\PushNotificationService.cs" />
     <Compile Include="Services\RecommandProduct.cs" />
     <Compile Include="Services\UserRecognize.cs" />
+    <Compile Include="Utils\BasicInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

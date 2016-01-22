@@ -204,6 +204,7 @@ namespace RetailDemoWP
 
         private async void PhotoButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            App.TelemetryClient.TrackEvent("PhotoButton_Tapped");
             await TakePhotoAsync();
         }
 
@@ -242,6 +243,7 @@ namespace RetailDemoWP
 
         private async void HardwareButtons_CameraPressed(object sender, CameraEventArgs e)
         {
+            App.TelemetryClient.TrackEvent("HardwareButtons_CameraPressed");
             await TakePhotoAsync();
         }
 
@@ -466,16 +468,19 @@ namespace RetailDemoWP
             try
             {
                 Debug.WriteLine("Taking photo...");
+                //App.TelemetryClient.TrackRequest();
+                App.TelemetryClient.Flush();
+                ////Application Insights
                 await _mediaCapture.CapturePhotoToStreamAsync(ImageEncodingProperties.CreateJpeg(), stream);
                 Debug.WriteLine("Photo taken!");
+                App.TelemetryClient.TrackEvent("CapturePhotoToStream");
 
                 var photoOrientation = ConvertOrientationToPhotoOrientation(GetCameraOrientation());
                 //Show Taked Photo
 
                 //Face Recognition
-                //await CapturePhotoAsync(stream, photoOrientation);
-                
-                await ReencodeAndSavePhotoAsync(stream, photoOrientation);
+          
+                await ReencodeAndSavePhotoAsync(stream, photoOrientation);               
                 await ProcessImage();
                 this.Frame.Navigate(typeof(ProductHighLight));
 
@@ -1072,7 +1077,14 @@ namespace RetailDemoWP
 
         private async Task<Face[]> ProcessImage()
         {
+            ////Application Insights
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             Face[] faces = await imageProcessor(ImgURL);
+            stopwatch.Stop();
+            var metrics = new Dictionary<string, double> { { "FacFaceRecognitionTime", stopwatch.Elapsed.TotalMilliseconds } };
+            var properties = new Dictionary<string, string> { { "RecognizedFaces", faces.Count<Face>().ToString() } };
+            App.TelemetryClient.TrackEvent("FaceRecognition", properties, metrics);
+            App.TelemetryClient.TrackMetric("FacFaceRecognitionTime", stopwatch.Elapsed.TotalSeconds);
             UpdateUIWithFaces(faces);
             return faces;
         }

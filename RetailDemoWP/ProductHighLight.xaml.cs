@@ -30,8 +30,7 @@ namespace RetailDemoWP
             PushNotificationService src = new PushNotificationService();
             UAgetxt.Text = src.UAge = App.CurrentVisiter.Age;
             UGendertxt.Text= src.UGender = App.CurrentVisiter.Gender;
-            src.InitNotificationsAsync();
-            
+            src.InitNotificationsAsync();            
         }
     }
 }
