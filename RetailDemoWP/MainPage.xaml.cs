@@ -87,7 +87,7 @@ namespace RetailDemoWP
 
             // Useful to know when to initialize/clean up the camera
             Application.Current.Suspending += Application_Suspending;
-            Application.Current.Resuming += Application_Resuming;
+            Application.Current.Resuming += Application_Resuming;           
         }
 
         private async void Application_Suspending(object sender, SuspendingEventArgs e)
@@ -477,6 +477,8 @@ namespace RetailDemoWP
                 
                 await ReencodeAndSavePhotoAsync(stream, photoOrientation);
                 await ProcessImage();
+                this.Frame.Navigate(typeof(ProductHighLight));
+
             }
             catch (Exception ex)
             {
@@ -1108,8 +1110,9 @@ namespace RetailDemoWP
                 foreach (var face in faces)
                 {
                     //HumanIdentification identification = new HumanIdentification();
-                    AgeTxt.Text = face.Attributes.Age.ToString() + " years old";
-                    GenderTxt.Text = face.Attributes.Gender;                   
+                    App.CurrentVisiter.Age = AgeTxt.Text = face.Attributes.Age.ToString() + " years old";
+                    App.CurrentVisiter.Gender= GenderTxt.Text = face.Attributes.Gender;  
+                     
                 }
             }
         }
