@@ -1,9 +1,9 @@
 ﻿{
   "dependencies": {
-    "Microsoft.ApplicationInsights": "1.2.3",
-    "Microsoft.ApplicationInsights.PersistenceChannel": "1.2.3",
-    "Microsoft.ApplicationInsights.WindowsApps": "1.1.1",
+    "HockeySDK.UWP": "3.1.1-build59744",
     "Microsoft.NETCore.UniversalWindowsPlatform": "5.0.0",
+    "Microsoft.ProjectOxford.Face": "1.1.0",
+    "Microsoft.ProjectOxford.Vision": "1.0.213",
     "Newtonsoft.Json": "8.0.2",
     "WindowsAzure.Messaging.Managed": "0.1.7.9"
   },

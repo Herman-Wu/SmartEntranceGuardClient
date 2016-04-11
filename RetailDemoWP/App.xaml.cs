@@ -26,8 +26,7 @@ using Windows.UI.Xaml.Navigation;
 using Microsoft.WindowsAzure.Messaging;
 using System.Diagnostics;
 using RetailDemoWP.Models;
-using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.ApplicationInsights;
+
 using RetailDemoWP.Utils;
 
 namespace RetailDemoWP
@@ -38,7 +37,6 @@ namespace RetailDemoWP
     sealed partial class App : Application
     {
         public static RetailVisiter CurrentVisiter;
-        public static Microsoft.ApplicationInsights.TelemetryClient TelemetryClient;
         public static string DeviceID;
         public static string UserName;
 
@@ -48,9 +46,7 @@ namespace RetailDemoWP
         /// </summary>
         public App()
         {
-            CurrentVisiter = new RetailVisiter();         
-            ApplicationInisghtsInitialize();
-         
+            CurrentVisiter = new RetailVisiter();               
             this.Suspending += OnSuspending;
             
         }
@@ -109,7 +105,7 @@ namespace RetailDemoWP
         void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
         {
             ////Application Insights
-            TelemetryClient.TrackException(e.Exception);
+            //TelemetryClient.TrackException(e.Exception);
             throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
         }
 
@@ -125,23 +121,6 @@ namespace RetailDemoWP
             var deferral = e.SuspendingOperation.GetDeferral();
             //TODO: Save application state and stop any background activity
             deferral.Complete();
-        }
-
-        private void ApplicationInisghtsInitialize()
-        {
-            Microsoft.ApplicationInsights.WindowsAppInitializer.InitializeAsync(
-               Microsoft.ApplicationInsights.WindowsCollectors.Metadata |
-               Microsoft.ApplicationInsights.WindowsCollectors.Session |
-                 Microsoft.ApplicationInsights.WindowsCollectors.PageView |
-           Microsoft.ApplicationInsights.WindowsCollectors.UnhandledException);
-
-            TelemetryClient = new TelemetryClient();
-
-            TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = true;
-            BasicInfo.Initialize();
-            DeviceID = App.TelemetryClient.Context.Device.Id = BasicInfo.DeviceID;
-            App.TelemetryClient.Context.User.Id = BasicInfo.UserName;
-
         }
 
     }

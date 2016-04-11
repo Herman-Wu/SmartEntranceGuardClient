@@ -209,7 +209,7 @@ namespace RetailDemoWP
 
         private async void PhotoButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            App.TelemetryClient.TrackEvent("PhotoButton_Tapped");
+            //App.TelemetryClient.TrackEvent("PhotoButton_Tapped");
             await TakePhotoAsync();
         }
 
@@ -248,7 +248,7 @@ namespace RetailDemoWP
 
         private async void HardwareButtons_CameraPressed(object sender, CameraEventArgs e)
         {
-            App.TelemetryClient.TrackEvent("HardwareButtons_CameraPressed");
+            //App.TelemetryClient.TrackEvent("HardwareButtons_CameraPressed");
             await TakePhotoAsync();
         }
 
@@ -287,7 +287,7 @@ namespace RetailDemoWP
         /// <returns></returns>
         private async Task InitializeCameraAsync()
         {
-            Debug.WriteLine("InitializeCameraAsync");
+            //Debug.WriteLine("InitializeCameraAsync");
 
             if (_mediaCapture == null)
             {
@@ -474,11 +474,11 @@ namespace RetailDemoWP
             {
                 Debug.WriteLine("Taking photo...");
                 //App.TelemetryClient.TrackRequest();
-                App.TelemetryClient.Flush();
+                //App.TelemetryClient.Flush();
                 ////Application Insights
                 await _mediaCapture.CapturePhotoToStreamAsync(ImageEncodingProperties.CreateJpeg(), stream);
                 Debug.WriteLine("Photo taken!");
-                App.TelemetryClient.TrackEvent("CapturePhotoToStream");
+                //App.TelemetryClient.TrackEvent("CapturePhotoToStream");
 
                 var photoOrientation = ConvertOrientationToPhotoOrientation(GetCameraOrientation());
                 //Show Taked Photo
@@ -1090,8 +1090,8 @@ namespace RetailDemoWP
             stopwatch.Stop();
             var metrics = new Dictionary<string, double> { { "FacFaceRecognitionTime", stopwatch.Elapsed.TotalMilliseconds } };
             var properties = new Dictionary<string, string> { { "RecognizedFaces", faces.Count<Face>().ToString() } };
-            App.TelemetryClient.TrackEvent("FaceRecognition", properties, metrics);
-            App.TelemetryClient.TrackMetric("FacFaceRecognitionTime", stopwatch.Elapsed.TotalSeconds);
+            //App.TelemetryClient.TrackEvent("FaceRecognition", properties, metrics);
+            //App.TelemetryClient.TrackMetric("FacFaceRecognitionTime", stopwatch.Elapsed.TotalSeconds);
             UpdateUIWithFaces(faces);
             RecommandProduct psrv = new RecommandProduct();
             //List<Product> tt=await psrv.RecommandProductbyImage(faces[0]);
@@ -1114,8 +1114,13 @@ namespace RetailDemoWP
                 {
                     
                     faces = await analyzer.AnalyzeImageUsingHelper(outputStream.AsStream());
+                    
                 }
-            }
+                using (var outputStream = await file.OpenAsync(FileAccessMode.ReadWrite))
+                {
+                    Microsoft.ProjectOxford.Vision.Contract.AnalysisResult result = await analyzer.AnalyzeVisionUsingHelper(outputStream.AsStream());
+                }
+                }
             catch (Exception e)
             {               
                 return null;
@@ -1135,8 +1140,8 @@ namespace RetailDemoWP
                 foreach (var face in faces)
                 {
                     //HumanIdentification identification = new HumanIdentification();
-                    App.CurrentVisiter.Age = AgeTxt.Text = face.Attributes.Age.ToString();
-                    App.CurrentVisiter.Gender= GenderTxt.Text = face.Attributes.Gender;  
+                    App.CurrentVisiter.Age = AgeTxt.Text = face.FaceAttributes.Age.ToString();
+                    App.CurrentVisiter.Gender= GenderTxt.Text = face.FaceAttributes.Gender;  
                      
                 }
             }
@@ -1144,7 +1149,10 @@ namespace RetailDemoWP
 
         private async Task RegisterNotifi()
         {
+            //註冊 Notification Service
             PushNotificationService src = new PushNotificationService();
+            
+            //設定Tags
             if (App.CurrentVisiter != null)
             {
                 src.UAge = App.CurrentVisiter.Age;
@@ -1152,7 +1160,7 @@ namespace RetailDemoWP
                 src.DeviceID = Utils.BasicInfo.DeviceID;
                 src.UName = Utils.BasicInfo.UserName;
             }
-            src.InitNotificationsAsync();
+            //src.InitNotificationsAsync();
         }
 
         public ObservableCollection<Product> rProducts
@@ -1175,5 +1183,9 @@ namespace RetailDemoWP
             }
         }
 
+        private void LoadImage_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+
+        }
     }
 }

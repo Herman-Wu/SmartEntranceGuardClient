@@ -90,9 +90,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <Content Include="ApplicationInsights.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Assets\RetailProducts.json" />
     <Content Include="Assets\SampleData\RetailProducts.json" />
     <None Include="project.json" />
@@ -175,13 +172,6 @@
     <SDKReference Include="WindowsTeam, Version=10.0.10586.0">
       <Name>Windows Team Extensions for the UWP</Name>
     </SDKReference>
-  </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
-    <ProjectReference Include="..\ClientLib\ClientLib.csproj">
-      <Project>{25d58ba5-660f-407b-803c-22b4547c09dc}</Project>
-      <Name>ClientLib</Name>
-    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

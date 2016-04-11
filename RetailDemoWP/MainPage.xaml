@@ -41,6 +41,11 @@
                     <SymbolIcon Symbol="Camera"/>
                 </Viewbox>
             </Button>
+            <Button Name="DefaultImageButton" Tapped="LoadImage_Tapped" IsEnabled="False">
+                <!--<Viewbox>
+                    <SymbolIcon Symbol="LoadImage"/>
+                </Viewbox>-->
+            </Button>
             <Image Name="OutputImage" Source="Assets/Square44x44Logo.png" Width="100" Height="100" Stretch="Uniform"/>
             
             <StackPanel Orientation="Vertical">

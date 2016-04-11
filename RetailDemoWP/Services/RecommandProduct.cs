@@ -32,7 +32,7 @@ namespace RetailDemoWP.Services
                 }
                 try
                 {
-                    if (singleFace.Attributes.Gender.ToLower() == p.Gender.ToLower() && singleFace.Attributes.Age > pAge - 5 && singleFace.Attributes.Age < pAge + 5)
+                    if (singleFace.FaceAttributes.Gender.ToLower() == p.Gender.ToLower() && singleFace.FaceAttributes.Age > pAge - 5 && singleFace.FaceAttributes.Age < pAge + 5)
                     {
                         if ((recommanedProduct.Where(c => c.name == p.name).Count<Product>()) ==0)
                         {

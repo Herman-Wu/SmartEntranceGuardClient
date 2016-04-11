@@ -1,5 +1,6 @@
 ﻿using Microsoft.ProjectOxford.Face;
 using Microsoft.ProjectOxford.Face.Contract;
+using Microsoft.ProjectOxford.Vision;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,38 +18,84 @@ namespace RetailDemoWP.Services
         {
             FaceId = face.FaceId;
             FaceRectangle = face.FaceRectangle;
-            FacialLandmarks = face.FacialLandmarks;
-            Attributes = face.Attributes;
+            FaceLandmarks = face.FaceLandmarks;
+            FaceAttributes = face.FaceAttributes;
         }
 
         public String Name;
     }
     public class ImageAnalyzer
     {
-        private string keyId = "e48f5878946846d2a7ab4452b5b4d324";
+        private string keyId = "14c8ed8ea9b74f0fbab8c89deb7cf5d1";
         private readonly IFaceServiceClient faceDetector;
+        private readonly IVisionServiceClient visionDetector;
+        private string GroupName = "adb69b6f-3e5d-427d-87ce-a7b4044285ff";
 
         public ImageAnalyzer()
         {
             faceDetector = new FaceServiceClient(keyId);
+            visionDetector = new VisionServiceClient(keyId);
         }
 
         public async Task<NamedFace[]> AnalyzeImageUsingHelper(Stream fileStream)
         {
-
-            Face[] faces = await faceDetector.DetectAsync(fileStream, false, true, true, false);
-
-            NamedFace[] namedFaces = new NamedFace[faces.Length];
-
-            //Copy to named faces vector.           
-            for (int i = 0; i < faces.Length; i++)
+            NamedFace[] namedFaces = null;
+            try
             {
-                namedFaces[i] = new NamedFace(faces[i]);
+               // Face[] faces = null;
+               
+               
+                Face[] faces = await faceDetector.DetectAsync(fileStream); //, false, true, new FaceAttributeType[] { FaceAttributeType.Gender, FaceAttributeType.Age, FaceAttributeType.Smile, FaceAttributeType.Glasses }
+                namedFaces = new NamedFace[faces.Length];
+                Guid[] collectionid = new Guid[faces.Length];
+                //Copy to named faces vector.           
+                for (int i = 0; i < faces.Length; i++)
+                {
+                    namedFaces[i] = new NamedFace(faces[i]);
+                    collectionid[i] = namedFaces[i].FaceId;
+                }
+
+                var faceIds = faces.Select(face => face.FaceId).ToArray();
+                string groupname = @"00000000-0000-0000-0000-000000000000";
+                var results = await faceDetector.IdentifyAsync(groupname, faces.Select(ff => ff.FaceId).ToArray());
+                foreach (var identifyResult in results)
+                {
+                    Debug.WriteLine("Result of face: {0}", identifyResult.FaceId);
+                    if (identifyResult.Candidates.Length == 0)
+                    {
+                        Debug.WriteLine("No one identified");
+                    }
+                    else
+                    {
+                        // Get top 1 among all candidates returned
+                        var candidateId = identifyResult.Candidates[0].PersonId;
+                        var person = await faceDetector.GetPersonAsync(groupname, candidateId);
+                        Debug.WriteLine("Identified as {0}", person.Name);
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.Message);
             }
             return namedFaces;
         }
 
-
+        public async Task<Microsoft.ProjectOxford.Vision.Contract.AnalysisResult> AnalyzeVisionUsingHelper(Stream fileStream)
+        {
+            Microsoft.ProjectOxford.Vision.Contract.AnalysisResult adultResult = null;
+            try
+            {
+                adultResult = await visionDetector.AnalyzeImageAsync(fileStream, new VisualFeature[] { VisualFeature.Adult });
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.Message);
+            }
+            return adultResult;
+        }
         public async Task TrainFaceDetector()
         {
 
@@ -95,7 +142,8 @@ namespace RetailDemoWP.Services
                 }
 
                 var friendFaceIds = friendFaces.Select(face => face.FaceId).ToArray();
-                PersonCreationResponse friend = await faceDetector.CreatePersonAsync(personGroupId, friendFaceIds, personDir.Name);
+                //PersonCreationResponse
+                //PersonCreationResponse friend = await faceDetector.CreatePersonAsync(personGroupId, personDir.Name);
             }
 
             await faceDetector.TrainPersonGroupAsync(personGroupId);
@@ -105,7 +153,7 @@ namespace RetailDemoWP.Services
             {
                 trainingStatus = await faceDetector.GetPersonGroupTrainingStatusAsync(personGroupId);
 
-                if (trainingStatus.Status != "running")
+                if (trainingStatus.Status != Status.Running)
                 {
                     break;
                 }
