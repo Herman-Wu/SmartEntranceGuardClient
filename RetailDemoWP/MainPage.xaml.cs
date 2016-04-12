@@ -58,7 +58,7 @@ namespace RetailDemoWP
         private DisplayOrientations _displayOrientation = DisplayOrientations.Portrait;
         private SolidColorBrush redBrush = new SolidColorBrush(Windows.UI.Colors.Red);
         private SolidColorBrush grayBrush = new SolidColorBrush(Windows.UI.Colors.LightGray);
-        
+        private StringBuilder outString = new StringBuilder();
 
         private static readonly Guid RotationKey = new Guid("C380465D-2271-428C-9B83-ECEA3B4A85C1");
 
@@ -216,6 +216,8 @@ namespace RetailDemoWP
         private async void PhotoButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             App.isAuthenricated = false;
+            outString.Clear();
+            LogText.Text = "";
             //App.TelemetryClient.TrackEvent("PhotoButton_Tapped");
             await TakePhotoAsync();
         }
@@ -270,8 +272,8 @@ namespace RetailDemoWP
 
         private async void MediaCapture_Failed(MediaCapture sender, MediaCaptureFailedEventArgs errorEventArgs)
         {
-            Debug.WriteLine("MediaCapture_Failed: (0x{0:X}) {1}", errorEventArgs.Code, errorEventArgs.Message);
-
+            outString.AppendFormat("MediaCapture_Failed: (0x{0:X}) {1}", errorEventArgs.Code, errorEventArgs.Message);
+            
             await CleanupCameraAsync();
 
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => UpdateCaptureControls());
@@ -479,12 +481,13 @@ namespace RetailDemoWP
 
             try
             {
-                Debug.WriteLine("Taking photo...");
+                LogMsg("Taking photo...");
                 //App.TelemetryClient.TrackRequest();
                 //App.TelemetryClient.Flush();
                 ////Application Insights
                 await _mediaCapture.CapturePhotoToStreamAsync(ImageEncodingProperties.CreateJpeg(), stream);
-                Debug.WriteLine("Photo taken!");
+                LogMsg("Photo taken!");
+
                 //App.TelemetryClient.TrackEvent("CapturePhotoToStream");
 
                 var photoOrientation = ConvertOrientationToPhotoOrientation(GetCameraOrientation());
@@ -492,7 +495,9 @@ namespace RetailDemoWP
 
                 //Face Recognition
 
-                await ReencodeAndSavePhotoAsync(stream, photoOrientation);               
+                await ReencodeAndSavePhotoAsync(stream, photoOrientation);
+                LogMsg("Start to process Image");
+
                 await ProcessImage();
                
                 //await RegisterNotifi();
@@ -502,7 +507,7 @@ namespace RetailDemoWP
             catch (Exception ex)
             {
                 // File I/O errors are reported as exceptions
-                Debug.WriteLine("Exception when taking a photo: {0}", ex.ToString());
+                outString.AppendFormat("Exception when taking a photo: {0}", ex.ToString());
             }
 
             //// Done taking a photo, so re-enable the button
@@ -527,17 +532,17 @@ namespace RetailDemoWP
                 var rotationAngle = 360 - ConvertDeviceOrientationToDegrees(GetCameraOrientation());
                 encodingProfile.Video.Properties.Add(RotationKey, PropertyValue.CreateInt32(rotationAngle));
 
-                Debug.WriteLine("Starting recording...");
+                LogMsg("Starting recording...");
 
                 await _mediaCapture.StartRecordToStorageFileAsync(encodingProfile, videoFile);
                 _isRecording = true;
 
-                Debug.WriteLine("Started recording!");
+                LogMsg("Started recording!");
             }
             catch (Exception ex)
             {
                 // File I/O errors are reported as exceptions
-                Debug.WriteLine("Exception when starting video recording: {0}", ex.ToString());
+                outString.AppendFormat("Exception when starting video recording: {0}", ex.ToString());
             }
         }
 
@@ -547,12 +552,11 @@ namespace RetailDemoWP
         /// <returns></returns>
         private async Task StopRecordingAsync()
         {
-            Debug.WriteLine("Stopping recording...");
+            LogMsg("Stopping recording...");
 
             _isRecording = false;
             await _mediaCapture.StopRecordAsync();
 
-            Debug.WriteLine("Stopped recording!");
         }
 
         /// <summary>
@@ -1098,18 +1102,26 @@ namespace RetailDemoWP
             //var properties = new Dictionary<string, string> { { "RecognizedFaces", faces.Count<Face>().ToString() } };
             //App.TelemetryClient.TrackEvent("FaceRecognition", properties, metrics);
             //App.TelemetryClient.TrackMetric("FacFaceRecognitionTime", stopwatch.Elapsed.TotalSeconds);
+            LogMsg("Update UI");
             UpdateUIWithFaces(faces);
             ////Open the door
-
             GPIOHelper gpiosrv = new GPIOHelper();
             gpiosrv.InitGPIO();
             if (App.isAuthenricated)
-            {                
+            {
+                LogMsg("The door is opening.....");
+                LogMsg("Only open 4 secs");
                 LED.Fill = redBrush;
                 gpiosrv.TurnlightOn();
-                await Task.Delay(TimeSpan.FromSeconds(2));
+                await Task.Delay(TimeSpan.FromSeconds(4));
                 gpiosrv.TurnlightOff();
                 LED.Fill = grayBrush;
+                LogMsg("The door closed");
+            }
+            else
+            {
+                outString.AppendFormat("The door won't be opened.");
+                LogMsg(outString.ToString());
             }
 
             ////RecommandProduct psrv = new RecommandProduct();
@@ -1213,6 +1225,19 @@ namespace RetailDemoWP
         private void LoadImage_Tapped(object sender, TappedRoutedEventArgs e)
         {
 
+        }
+        public void LogMsg(string logMessage)
+        {
+            if (String.IsNullOrEmpty(logMessage) || logMessage == "\n")
+            {
+                LogText.Text += "\n";
+            }
+            else
+            {
+                string timeStr = DateTime.Now.ToString("HH:mm:ss.ffffff");
+                string messaage = "[" + timeStr + "]: " + logMessage + "\n";
+                LogText.Text += messaage;
+            }
         }
     }
 }

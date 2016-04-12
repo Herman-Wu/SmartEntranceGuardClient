@@ -31,7 +31,10 @@
             <Canvas Name="FacesCanvas" RenderTransformOrigin="0.5,0.5"/>
         </Canvas>
         <Canvas>
-            <Canvas Name="ProdocuRecommand" RenderTransformOrigin="0.5,0.5"/>
+            <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                <TextBlock x:Name="LogText" Foreground="White"/>
+            </StackPanel>
+            <!--<Canvas Name="ProdocuRecommand" RenderTransformOrigin="0.5,0.5"/>-->
         </Canvas>
 
         <!-- Capture + Record buttons -->
@@ -66,8 +69,10 @@
             </Button>-->
         </StackPanel>
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
-            <Ellipse x:Name="LED" Fill="LightGray" Stroke="White" Width="100" Height="100" Margin="10"/>
+            <Ellipse x:Name="LED" Fill="LightGray" Stroke="White" Width="80" Height="80" Margin="10"/>
+            
         </StackPanel>
+       
         <!--<StackPanel HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Vertical">
             <ListView  Name="RecommandedProductsList" ItemsSource="{Binding rProducts}">
                 <ListView.ItemTemplate>
