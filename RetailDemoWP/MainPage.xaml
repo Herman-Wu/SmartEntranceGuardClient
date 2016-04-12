@@ -41,17 +41,19 @@
                     <SymbolIcon Symbol="Camera"/>
                 </Viewbox>
             </Button>
-            <Button Name="DefaultImageButton" Tapped="LoadImage_Tapped" IsEnabled="False">
-                <!--<Viewbox>
-                    <SymbolIcon Symbol="LoadImage"/>
-                </Viewbox>-->
-            </Button>
+          
             <Image Name="OutputImage" Source="Assets/Square44x44Logo.png" Width="100" Height="100" Stretch="Uniform"/>
             
             <StackPanel Orientation="Vertical">
                 <TextBlock Name="AgeTxt" FontSize="12" Foreground="White" Margin="10" VerticalAlignment="Center" 
                    FontFamily="Segoe UI Semibold"/>
                 <TextBlock Name="GenderTxt" FontSize="12" Foreground="White" Margin="10" VerticalAlignment="Center" 
+                   FontFamily="Segoe UI Semibold"/>
+                <TextBlock Name="NameTxt" FontSize="12" Foreground="White" Margin="10" VerticalAlignment="Center" 
+                   FontFamily="Segoe UI Semibold"/>
+                <TextBlock Name="IsAdultTxt" FontSize="12" Foreground="White" Margin="10" VerticalAlignment="Center" 
+                   FontFamily="Segoe UI Semibold"/>
+                <TextBlock Name="IsRacyTxt" FontSize="12" Foreground="White" Margin="10" VerticalAlignment="Center" 
                    FontFamily="Segoe UI Semibold"/>
             </StackPanel>
 
@@ -63,15 +65,15 @@
                 </Grid>
             </Button>-->
         </StackPanel>
-        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Vertical">
+        <!--<StackPanel HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Vertical">
             <ListView  Name="RecommandedProductsList" ItemsSource="{Binding rProducts}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
                             <Image Source="{Binding Photo}" Height="80" Width="80" Stretch="Uniform"/>
                             <StackPanel Orientation="Vertical" >
-                            <!--<TextBlock Text="Name: " />
-                                <TextBlock Text="{Binding name}" Foreground="White"/>-->
+                            <TextBlock Text="Name: " />
+                                --><!--<TextBlock x:Name="userName" Text="{Binding name}" Foreground="White"/>--><!--
                                 <TextBlock Text="Region: " Foreground="Yellow" />
                                 <TextBlock Text="{Binding Region}" Foreground="White" />
                                 </StackPanel>
@@ -79,7 +81,7 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-        </StackPanel>
+        </StackPanel>-->
             <!--Button to enable / disable face detection-->
         <!--<Button Name="FaceDetectionButton" Tapped="FaceDetectionButton_Tapped" IsEnabled="False">
             <Viewbox>

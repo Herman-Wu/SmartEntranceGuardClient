@@ -78,6 +78,9 @@ namespace RetailDemoWP
         private FaceDetectionEffect _faceDetectionEffect;
         public Face[] RecognizedFaces = null;
         private string ImgURL;
+        Microsoft.ProjectOxford.Vision.Contract.AnalysisResult Visionresult;
+        private string IsAdult;
+        private string IsRacy;
         private StorageFile file;
         private ObservableCollection<Product> _rProducts;
 
@@ -746,7 +749,7 @@ namespace RetailDemoWP
                 SoftwareBitmapSource bitmapSource = new SoftwareBitmapSource();
                 await bitmapSource.SetBitmapAsync(softwareBitmapBGR8);
                 OutputImage.Source = bitmapSource;
-                file = await KnownFolders.PicturesLibrary.CreateFileAsync("SimplePhoto.jpeg", CreationCollisionOption.GenerateUniqueName);
+                file = await KnownFolders.PicturesLibrary.CreateFileAsync("SimplePhoto.jpeg", CreationCollisionOption.ReplaceExisting);
                 
                 using (var outputStream = await file.OpenAsync(FileAccessMode.ReadWrite))
                 {
@@ -1082,47 +1085,45 @@ namespace RetailDemoWP
 
         #endregion
 
-        private async Task<Face[]> ProcessImage()
-        {
-            ////Application Insights
-            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            Face[] faces = await imageProcessor(ImgURL);
-            stopwatch.Stop();
-            var metrics = new Dictionary<string, double> { { "FacFaceRecognitionTime", stopwatch.Elapsed.TotalMilliseconds } };
-            var properties = new Dictionary<string, string> { { "RecognizedFaces", faces.Count<Face>().ToString() } };
+        private async Task<NamedFace[]> ProcessImage()
+        {            
+            //var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            NamedFace[] faces = await imageProcessor(ImgURL);
+            //stopwatch.Stop();
+            //var metrics = new Dictionary<string, double> { { "FacFaceRecognitionTime", stopwatch.Elapsed.TotalMilliseconds } };
+            //var properties = new Dictionary<string, string> { { "RecognizedFaces", faces.Count<Face>().ToString() } };
             //App.TelemetryClient.TrackEvent("FaceRecognition", properties, metrics);
             //App.TelemetryClient.TrackMetric("FacFaceRecognitionTime", stopwatch.Elapsed.TotalSeconds);
             UpdateUIWithFaces(faces);
-            RecommandProduct psrv = new RecommandProduct();
+            ////RecommandProduct psrv = new RecommandProduct();
             //List<Product> tt=await psrv.RecommandProductbyImage(faces[0]);
-             rProducts = new ObservableCollection<Product>(await psrv.RecommandProductbyImage(faces[0]));
+            /// rProducts = new ObservableCollection<Product>(await psrv.RecommandProductbyImage(faces[0]));
             //RecommandedProductsList.DataContext = ;
-            RecommandedProductsList.ItemsSource = rProducts;
-            RecommandedProductsList.UpdateLayout();
+            //RecommandedProductsList.ItemsSource = rProducts;
+            //RecommandedProductsList.UpdateLayout();
             return faces;
         }
 
-        private async Task<Face[]> imageProcessor(string imgURL)
-        {           
-            Face[] faces;
-
+        private async Task<NamedFace[]> imageProcessor(string imgURL)
+        {
+            NamedFace[] faces;
             try
             {
                 ImageAnalyzer analyzer = new ImageAnalyzer();
                 //using (FileStream fileStream = await file.
                 using (var outputStream = await file.OpenAsync(FileAccessMode.ReadWrite))
                 {
-                    
+
                     faces = await analyzer.AnalyzeImageUsingHelper(outputStream.AsStream());
-                    
+
                 }
                 using (var outputStream = await file.OpenAsync(FileAccessMode.ReadWrite))
                 {
-                    Microsoft.ProjectOxford.Vision.Contract.AnalysisResult result = await analyzer.AnalyzeVisionUsingHelper(outputStream.AsStream());
+                    Visionresult = await analyzer.AnalyzeVisionUsingHelper(outputStream.AsStream());
                 }
-                }
+            }
             catch (Exception e)
-            {               
+            {
                 return null;
             }
 
@@ -1131,19 +1132,22 @@ namespace RetailDemoWP
             return faces;
         }
 
-        private void UpdateUIWithFaces(Face[] faces)
+        private void UpdateUIWithFaces(NamedFace[] faces)
         {
             StringBuilder usersAgeBuilder = new StringBuilder();
             if (faces != null)
             {
                 int index = 0;
+                App.CurrentVisiter = new DoorVisiter[faces.Length];
                 foreach (var face in faces)
                 {
                     //HumanIdentification identification = new HumanIdentification();
-                    App.CurrentVisiter.Age = AgeTxt.Text = face.FaceAttributes.Age.ToString();
-                    App.CurrentVisiter.Gender= GenderTxt.Text = face.FaceAttributes.Gender;  
-                     
+                    AgeTxt.Text = face.FaceAttributes.Age.ToString();
+                    GenderTxt.Text = face.FaceAttributes.Gender;
+                    NameTxt.Text = face.Name;
                 }
+                IsAdultTxt.Text = "IsAdultContent: "+Visionresult.Adult.IsAdultContent;
+                IsRacyTxt.Text = "IsRacyContent: " + Visionresult.Adult.IsRacyContent;
             }
         }
 
@@ -1151,12 +1155,12 @@ namespace RetailDemoWP
         {
             //註冊 Notification Service
             PushNotificationService src = new PushNotificationService();
-            
+  
             //設定Tags
             if (App.CurrentVisiter != null)
             {
-                src.UAge = App.CurrentVisiter.Age;
-                src.UGender = App.CurrentVisiter.Gender;
+                src.UAge = App.CurrentVisiter.Select(ff => ff.Age).ToString();
+                src.UGender = App.CurrentVisiter.Select(ff => ff.Gender).ToString();
                 src.DeviceID = Utils.BasicInfo.DeviceID;
                 src.UName = Utils.BasicInfo.UserName;
             }

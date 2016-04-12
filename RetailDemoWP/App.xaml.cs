@@ -36,7 +36,7 @@ namespace RetailDemoWP
     /// </summary>
     sealed partial class App : Application
     {
-        public static RetailVisiter CurrentVisiter;
+        public static DoorVisiter[] CurrentVisiter;
         public static string DeviceID;
         public static string UserName;
 
@@ -46,7 +46,7 @@ namespace RetailDemoWP
         /// </summary>
         public App()
         {
-            CurrentVisiter = new RetailVisiter();               
+            //CurrentVisiter = new DoorVisiter[]();               
             this.Suspending += OnSuspending;
             
         }

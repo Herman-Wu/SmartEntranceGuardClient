@@ -23,6 +23,7 @@ namespace RetailDemoWP.Services
         }
 
         public String Name;
+        public String FaceID;
     }
     public class ImageAnalyzer
     {
@@ -45,36 +46,34 @@ namespace RetailDemoWP.Services
                // Face[] faces = null;
                
                
-                Face[] faces = await faceDetector.DetectAsync(fileStream); //, false, true, new FaceAttributeType[] { FaceAttributeType.Gender, FaceAttributeType.Age, FaceAttributeType.Smile, FaceAttributeType.Glasses }
+                Face[] faces = await faceDetector.DetectAsync(fileStream,true,false, new FaceAttributeType[] { FaceAttributeType.Gender, FaceAttributeType.Age, FaceAttributeType.Smile, FaceAttributeType.Glasses }); //, false, true, new FaceAttributeType[] { FaceAttributeType.Gender, FaceAttributeType.Age, FaceAttributeType.Smile, FaceAttributeType.Glasses }
                 namedFaces = new NamedFace[faces.Length];
-                Guid[] collectionid = new Guid[faces.Length];
                 //Copy to named faces vector.           
-                for (int i = 0; i < faces.Length; i++)
-                {
-                    namedFaces[i] = new NamedFace(faces[i]);
-                    collectionid[i] = namedFaces[i].FaceId;
-                }
-
+                //for (int i = 0; i < faces.Length; i++)
+                //{
+                //    namedFaces[i] = new NamedFace(faces[i]);
+                //}
                 var faceIds = faces.Select(face => face.FaceId).ToArray();
                 string groupname = @"00000000-0000-0000-0000-000000000000";
                 var results = await faceDetector.IdentifyAsync(groupname, faces.Select(ff => ff.FaceId).ToArray());
-                foreach (var identifyResult in results)
+                for (int i = 0; i < results.Length; i++)
                 {
-                    Debug.WriteLine("Result of face: {0}", identifyResult.FaceId);
-                    if (identifyResult.Candidates.Length == 0)
+                    namedFaces[i] = new NamedFace(faces[i]);
+                    Debug.WriteLine("Result of face: {0}", results[i].FaceId);
+                    if (results[i].Candidates.Length == 0)
                     {
+                        namedFaces[i].Name = "unknown";
                         Debug.WriteLine("No one identified");
                     }
                     else
                     {
                         // Get top 1 among all candidates returned
-                        var candidateId = identifyResult.Candidates[0].PersonId;
+                        var candidateId = results[i].Candidates[0].PersonId;
                         var person = await faceDetector.GetPersonAsync(groupname, candidateId);
+                        namedFaces[i].Name = person.Name;
                         Debug.WriteLine("Identified as {0}", person.Name);
                     }
                 }
-
-
             }
             catch (Exception ex)
             {

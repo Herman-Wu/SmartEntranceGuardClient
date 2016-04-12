@@ -28,11 +28,11 @@ namespace RetailDemoWP
         {
             this.InitializeComponent();
             PushNotificationService src = new PushNotificationService();
-            if (App.CurrentVisiter != null)
-            {
-                UAgetxt.Text = src.UAge = App.CurrentVisiter.Age;
-                UGendertxt.Text = src.UGender = App.CurrentVisiter.Gender;
-            }
+            //if (App.CurrentVisiter != null)
+            //{
+            //    UAgetxt.Text = src.UAge = App.CurrentVisiter.Age;
+            //    UGendertxt.Text = src.UGender = App.CurrentVisiter.Gender;
+            //}
             src.InitNotificationsAsync();            
         }
     }
