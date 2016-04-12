@@ -65,6 +65,9 @@
                 </Grid>
             </Button>-->
         </StackPanel>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left">
+            <Ellipse x:Name="LED" Fill="LightGray" Stroke="White" Width="100" Height="100" Margin="10"/>
+        </StackPanel>
         <!--<StackPanel HorizontalAlignment="Left" VerticalAlignment="Center" Orientation="Vertical">
             <ListView  Name="RecommandedProductsList" ItemsSource="{Binding rProducts}">
                 <ListView.ItemTemplate>

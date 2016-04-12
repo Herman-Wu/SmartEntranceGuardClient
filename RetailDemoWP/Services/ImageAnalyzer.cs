@@ -30,7 +30,7 @@ namespace RetailDemoWP.Services
         private string keyId = "14c8ed8ea9b74f0fbab8c89deb7cf5d1";
         private readonly IFaceServiceClient faceDetector;
         private readonly IVisionServiceClient visionDetector;
-        private string GroupName = "adb69b6f-3e5d-427d-87ce-a7b4044285ff";
+        private string Groupname = "e9a667ea-7260-4383-840e-5afcbb1a567a";
 
         public ImageAnalyzer()
         {
@@ -54,8 +54,7 @@ namespace RetailDemoWP.Services
                 //    namedFaces[i] = new NamedFace(faces[i]);
                 //}
                 var faceIds = faces.Select(face => face.FaceId).ToArray();
-                string groupname = @"00000000-0000-0000-0000-000000000000";
-                var results = await faceDetector.IdentifyAsync(groupname, faces.Select(ff => ff.FaceId).ToArray());
+                var results = await faceDetector.IdentifyAsync(Groupname, faces.Select(ff => ff.FaceId).ToArray());
                 for (int i = 0; i < results.Length; i++)
                 {
                     namedFaces[i] = new NamedFace(faces[i]);
@@ -67,9 +66,10 @@ namespace RetailDemoWP.Services
                     }
                     else
                     {
+                        App.isAuthenricated = true;
                         // Get top 1 among all candidates returned
                         var candidateId = results[i].Candidates[0].PersonId;
-                        var person = await faceDetector.GetPersonAsync(groupname, candidateId);
+                        var person = await faceDetector.GetPersonAsync(Groupname, candidateId);
                         namedFaces[i].Name = person.Name;
                         Debug.WriteLine("Identified as {0}", person.Name);
                     }

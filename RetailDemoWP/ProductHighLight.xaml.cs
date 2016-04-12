@@ -27,7 +27,7 @@ namespace RetailDemoWP
         public ProductHighLight()
         {
             this.InitializeComponent();
-            PushNotificationService src = new PushNotificationService();
+            DemoPushNotificationService src = new DemoPushNotificationService();
             //if (App.CurrentVisiter != null)
             //{
             //    UAgetxt.Text = src.UAge = App.CurrentVisiter.Age;

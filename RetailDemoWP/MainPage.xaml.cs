@@ -56,7 +56,10 @@ namespace RetailDemoWP
         private readonly SimpleOrientationSensor _orientationSensor = SimpleOrientationSensor.GetDefault();
         private SimpleOrientation _deviceOrientation = SimpleOrientation.NotRotated;
         private DisplayOrientations _displayOrientation = DisplayOrientations.Portrait;
-       
+        private SolidColorBrush redBrush = new SolidColorBrush(Windows.UI.Colors.Red);
+        private SolidColorBrush grayBrush = new SolidColorBrush(Windows.UI.Colors.LightGray);
+        
+
         private static readonly Guid RotationKey = new Guid("C380465D-2271-428C-9B83-ECEA3B4A85C1");
 
         // Prevent the screen from sleeping while the camera is running
@@ -212,6 +215,7 @@ namespace RetailDemoWP
 
         private async void PhotoButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            App.isAuthenricated = false;
             //App.TelemetryClient.TrackEvent("PhotoButton_Tapped");
             await TakePhotoAsync();
         }
@@ -491,7 +495,7 @@ namespace RetailDemoWP
                 await ReencodeAndSavePhotoAsync(stream, photoOrientation);               
                 await ProcessImage();
                
-                await RegisterNotifi();
+                //await RegisterNotifi();
                 //this.Frame.Navigate(typeof(ProductHighLight));
 
             }
@@ -1095,6 +1099,19 @@ namespace RetailDemoWP
             //App.TelemetryClient.TrackEvent("FaceRecognition", properties, metrics);
             //App.TelemetryClient.TrackMetric("FacFaceRecognitionTime", stopwatch.Elapsed.TotalSeconds);
             UpdateUIWithFaces(faces);
+            ////Open the door
+
+            GPIOHelper gpiosrv = new GPIOHelper();
+            gpiosrv.InitGPIO();
+            if (App.isAuthenricated)
+            {                
+                LED.Fill = redBrush;
+                gpiosrv.TurnlightOn();
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                gpiosrv.TurnlightOff();
+                LED.Fill = grayBrush;
+            }
+
             ////RecommandProduct psrv = new RecommandProduct();
             //List<Product> tt=await psrv.RecommandProductbyImage(faces[0]);
             /// rProducts = new ObservableCollection<Product>(await psrv.RecommandProductbyImage(faces[0]));
@@ -1149,22 +1166,28 @@ namespace RetailDemoWP
                 IsAdultTxt.Text = "IsAdultContent: "+Visionresult.Adult.IsAdultContent;
                 IsRacyTxt.Text = "IsRacyContent: " + Visionresult.Adult.IsRacyContent;
             }
+            if(Visionresult!=null)
+            {
+                //If Adult or Racy. Send notification
+               // DemoPushNotificationService src = new DemoPushNotificationService();
+                
+            }
         }
 
         private async Task RegisterNotifi()
         {
             //註冊 Notification Service
-            PushNotificationService src = new PushNotificationService();
+            DemoPushNotificationService src = new DemoPushNotificationService();
   
             //設定Tags
             if (App.CurrentVisiter != null)
             {
-                src.UAge = App.CurrentVisiter.Select(ff => ff.Age).ToString();
-                src.UGender = App.CurrentVisiter.Select(ff => ff.Gender).ToString();
+                //src.UAge = App.CurrentVisiter.Select(ff => ff.Age).ToString();
+                //src.UGender = App.CurrentVisiter.Select(ff => ff.Gender).ToString();
                 src.DeviceID = Utils.BasicInfo.DeviceID;
                 src.UName = Utils.BasicInfo.UserName;
             }
-            //src.InitNotificationsAsync();
+            src.InitNotificationsAsync();
         }
 
         public ObservableCollection<Product> rProducts

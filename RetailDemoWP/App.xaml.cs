@@ -37,6 +37,7 @@ namespace RetailDemoWP
     sealed partial class App : Application
     {
         public static DoorVisiter[] CurrentVisiter;
+        public static bool isAuthenricated = false;
         public static string DeviceID;
         public static string UserName;
 
